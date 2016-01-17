@@ -6,4 +6,6 @@ MODEL_NAME_ALIAS = {
   'hashtag': 'HashStore',
   'menu': 'Menu',
   'menuitem': 'Item',
+  'user': 'User',
+  'userday': 'UserDay',
   }
