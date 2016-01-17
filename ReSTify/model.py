@@ -13,47 +13,31 @@ class HashStore(ndb.Model):
     viewDate = ndb.DateTimeProperty(auto_now_add=True)
 
 class Item(ndb.Model):
-    Id = ndb.IntegerProperty()
-    Name = ndb.StringProperty(indexed=False)
-    Parts = ndb.StringProperty(indexed=False)
-    Weigth = ndb.StringProperty(indexed=False)
+    name = ndb.StringProperty()
+    parts = ndb.StringProperty()
+    weight = ndb.StringProperty()
 
 class Menu(ndb.Model):    
-    Id = ndb.IntegerProperty()
-    Name = ndb.StringProperty(indexed=False)
-    Items = ndb.StructuredProperty(Item, repeated=True)
-    Price = ndb.IntegerProperty()
-    OnDate = ndb.DateTimeProperty(auto_now_add=True)
+    name = ndb.StringProperty()
+    items = ndb.StructuredProperty(Item, repeated=True) 
+    price = ndb.StringProperty()
+    onDate = ndb.StringProperty()
     
+class User(ndb.Model):    
+    name = ndb.StringProperty()
+    bill = ndb.IntegerProperty()
 
+class UserDay(ndb.Model):   
+    userid = ndb.IntegerProperty() 
+    date = ndb.DateProperty(auto_now_add=True)
+    selectid = ndb.IntegerProperty() 
+    
 '''
-public class Item
-    {
-        public int Id { get; set; }
-        public string Name { get; set; }
-        public string Parts { get; set; }
-        public string Weight { get; set; }
-    }
-
-public class Menu
-    {
-        public int Id { get; set; }
-        public string Name { get; set; }
-        public virtual List<Item> Items { get; set; }
-        public int Price { get; set; }
-        public DateTime? OnDate { get; set; }
-    }
 public class UserDay
    {
        public int Id { get; set; }
        public int UserId { get; set; }
        public DateTime Date { get; set; }
        public Menu select { get; set; }
-   }
-public class FoodUser
-   {
-       public int Id { get; set; }
-       public string Name { get; set; }
-       public int Bill { get; set; }
    }
 '''

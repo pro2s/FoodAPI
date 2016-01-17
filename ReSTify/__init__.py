@@ -49,8 +49,11 @@ def CSOR_Jsonify(func):
             import datetime
 
             if isinstance(obj, datetime.datetime):
-                return obj.strftime("%Y/%m/%d %H:%M")
+                return obj.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
 
+            if isinstance(obj, datetime.date):
+                return obj.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+                
             return str(obj)
 
         dataObject=func(*args, **kw)
@@ -104,8 +107,8 @@ class ReST(webapp2.RequestHandler):
             node.pop(-1)
 
         _model = get_model_from_URL(node[2])
-
-        _json = self.request.body.encode("utf-8")
+        request = unicode(self.request.body, 'utf-8')
+        _json = request.encode("utf-8")
 
         try:
             json_args_dic = json.loads(_json,encoding="utf-8")
@@ -114,19 +117,20 @@ class ReST(webapp2.RequestHandler):
             self.abort(400)
 
         if json_args_dic:
+            json_args_dic.pop("id", None)
             HashEntry=_model(**json_args_dic)
             key=HashEntry.put()
             self.response.set_status(201,"Created")
 
             json_args_dic['id'] = key.id()
-            status['object'] = json_args_dic
+            result = json_args_dic
 
         if not key:
             status["success"] = False
             status["error"] = "Unable to Add your Tab.Try again"
             self.abort(404)
 
-        return status
+        return result
 
     @CSOR_Jsonify
     def get(self,query=""):
@@ -266,7 +270,7 @@ class ReST(webapp2.RequestHandler):
         if node[-1] == '':
             node.pop(-1)
 
-        if len(node) - 1 > 2:
+        if len(node) - 1 >  2:
             if node[2]:
                 try:
                     _model = get_model_from_URL(node[2])
@@ -277,11 +281,14 @@ class ReST(webapp2.RequestHandler):
             if _model:
                 Object_by_id = _model.get_by_id(int(node[3]))
             else:
+                print "_model is None"
                 self.abort(404)
 
             # if data already present in server, then modify
             if Object_by_id:
-                _json = self.request.body.encode("utf-8")
+            
+                request = unicode(self.request.body, 'utf-8')
+                _json = request.encode("utf-8")
 
                 try:
                     json_args_dic = json.loads(_json,encoding="utf-8")
@@ -290,19 +297,23 @@ class ReST(webapp2.RequestHandler):
 
                 if json_args_dic :
                     json_args_dic["id"]=int(node[3])
-                    status['object'] = json_args_dic
+                    result  = json_args_dic
                     HashEntry=_model(**json_args_dic)
                     key=HashEntry.put()
                 else:
                     self.abort(400)
             else:
+                print "Object is None"
                 self.abort(404)
+                
         else:
+            print "Len node %d" % len(node)
             self.abort(404)
+            
 
         if HashEntry:
             self.response.set_status(200,"Ok")
-            return status
+            return result
         else:
             self.abort(404)
 
