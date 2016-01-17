@@ -6,7 +6,7 @@ class LandingPage(webapp2.RequestHandler):
 	""" Landing Page """
 
 	def get(self):
-		self.response.write("Welcome buddy!")
+		self.response.write("Dummy Food API")
 
 application = webapp2.WSGIApplication(
     [

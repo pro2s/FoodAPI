@@ -114,7 +114,7 @@ class ReST(webapp2.RequestHandler):
             self.abort(400)
 
         if json_args_dic:
-            HashEntry=_model(author=users.get_current_user(), **json_args_dic)
+            HashEntry=_model(**json_args_dic)
             key=HashEntry.put()
             self.response.set_status(201,"Created")
 
@@ -163,7 +163,7 @@ class ReST(webapp2.RequestHandler):
             if len(node) -1 > 2 and _model:
                 Object_by_id = _model.get_by_id(int(node[3]))
             elif node[2] and _model:
-                qry = _model.query().filter(_model.author == users.get_current_user())
+                qry = _model.query()
             else:
                 print str(_model)
                 self.abort(404)
@@ -291,7 +291,7 @@ class ReST(webapp2.RequestHandler):
                 if json_args_dic :
                     json_args_dic["id"]=int(node[3])
                     status['object'] = json_args_dic
-                    HashEntry=_model(author=users.get_current_user(), **json_args_dic)
+                    HashEntry=_model(**json_args_dic)
                     key=HashEntry.put()
                 else:
                     self.abort(400)
