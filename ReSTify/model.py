@@ -17,11 +17,46 @@ class Item(ndb.Model):
     parts = ndb.StringProperty()
     weight = ndb.StringProperty()
 
+    
+class MenuItemsProperty(ndb.IntegerProperty):
+    def _validate(self, value):
+        print "_validate"
+        pass
+        #if not isinstance(value, (int, long)):
+        #raise TypeError('expected an integer, got %s' % repr(value))
+
+    def _to_base_type(self, value):
+        print "to"
+        # return count of items
+        pass
+
+    def _from_base_type(self, value):
+        print "from"
+        # return items
+        dataList=[]
+        qry = User.query()
+        if qry:
+            for temp in qry:
+                dataObject=temp.to_dict()
+                dataObject["id"] = temp.key.id()
+                dataList.append(dataObject)
+        return dataList
+        
 class Menu(ndb.Model):    
     name = ndb.StringProperty()
-    items = ndb.StructuredProperty(Item, repeated=True) 
+    #items = ndb.StructuredProperty(Item, repeated=True) 
+    items = MenuItemsProperty(default = 0)
     price = ndb.StringProperty()
     onDate = ndb.StringProperty()
+    type = ndb.IntegerProperty(default = 0)
+    
+    
+    @classmethod
+    def GetQuery(self, request):
+        print "GetQuery"
+        type = request.get("type",0)
+        print type
+        return self.filter("type>=", type).query()
     
 class User(ndb.Model):    
     name = ndb.StringProperty()

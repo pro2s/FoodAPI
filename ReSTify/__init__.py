@@ -167,7 +167,10 @@ class ReST(webapp2.RequestHandler):
             if len(node) -1 > 2 and _model:
                 Object_by_id = _model.get_by_id(int(node[3]))
             elif node[2] and _model:
-                qry = _model.query()
+                try:
+                    qty = _model.GetQuery(self.request)
+                except:
+                    qry = _model.query()
             else:
                 print str(_model)
                 self.abort(404)
