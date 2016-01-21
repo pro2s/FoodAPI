@@ -23,6 +23,8 @@ __version__ = "0.1"
 
 import os
 import sys
+import logging
+
 
 from google.appengine.api import users
 
@@ -49,10 +51,10 @@ def CSOR_Jsonify(func):
             import datetime
 
             if isinstance(obj, datetime.datetime):
-                return obj.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+                return obj.strftime("%Y-%m-%dT%H:%M:%S+%fZ")
 
             if isinstance(obj, datetime.date):
-                return obj.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+                return obj.strftime("%Y-%m-%d")
                 
             return str(obj)
 
@@ -121,7 +123,7 @@ class ReST(webapp2.RequestHandler):
             HashEntry=_model(**json_args_dic)
             key=HashEntry.put()
             self.response.set_status(201,"Created")
-
+            json_args_dic = HashEntry.to_dict()
             json_args_dic['id'] = key.id()
             result = json_args_dic
 
@@ -167,10 +169,12 @@ class ReST(webapp2.RequestHandler):
             if len(node) -1 > 2 and _model:
                 Object_by_id = _model.get_by_id(int(node[3]))
             elif node[2] and _model:
+                
                 try:
-                    qty = _model.GetQuery(self.request)
+                    qry = _model.GetQuery(self.request)
                 except:
                     qry = _model.query()
+
             else:
                 print str(_model)
                 self.abort(404)
