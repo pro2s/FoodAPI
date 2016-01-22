@@ -65,7 +65,7 @@ class User(ndb.Model):
 
 class UserDay(ndb.Model):   
     userid = ndb.IntegerProperty() 
-    date = ndb.DateProperty(auto_now_add=True)
+    date = JsonDateProperty()
     selectid = ndb.IntegerProperty() 
     
 '''
