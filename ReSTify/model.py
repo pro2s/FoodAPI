@@ -56,6 +56,8 @@ class Menu(ndb.Model):
             qry = self.query(Menu.type == -1)
         elif (system == "all"):
             qry = self.query(Menu.type !=  0)
+        elif (system == "global"):
+            qry = self.query(Menu.type >  0)
         
         return qry
     
