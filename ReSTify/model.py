@@ -23,12 +23,15 @@ class JsonDateProperty(ndb.DateProperty):
             value = datetime.datetime.strptime(value, fmt)
         except ValueError, v:
             ulr = len(v.args[0].partition('unconverted data remains: ')[2])
-            if ulr:
+            if ulr and value is not None:
                 value = datetime.datetime.strptime(value[:-ulr], fmt)
             else:
                 value = None
+        except TypeError:
+            value = None
         ndb.DateProperty._set_value(self, entity, value)
 
+   
     
 class Item(ndb.Model):
     name = ndb.StringProperty()

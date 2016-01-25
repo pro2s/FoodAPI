@@ -3,6 +3,7 @@ from google.appengine.ext import ndb
 from google.appengine.api import urlfetch
 
 from HTMLParser import HTMLParser
+from ReSTify.model import Menu, Item
 
 import webapp2
 import datetime 
@@ -17,20 +18,16 @@ def clone_entity(e, **extra_args):
   
 class LandingPage(webapp2.RequestHandler):
     def get(self):
-        self.response.write("Dummy Food API")
+        self.response.write("Food API")
 
 class MenuParser(HTMLParser):
-    def __init__(self):
+    def __init__(self, startday = datetime.date.today()):
         HTMLParser.__init__(self)
         self.recording = 0
         self.data = []
         self.items = []
         self.day = 0
-        self.mondaymenu = []
-        day = datetime.date.today()
-        day_of_week = day.weekday()
-        to_beginning_of_week = datetime.timedelta(days=day_of_week)
-        self.monday = day - to_beginning_of_week + datetime.timedelta(days=7)
+        self.startday = startday
         
     def handle_starttag(self, tag, attrs):
         
@@ -54,27 +51,31 @@ class MenuParser(HTMLParser):
         if self.recording and tag == 'li':
             self.recording -= 1
             if self.day < 5:
-                date = (self.monday + datetime.timedelta(days=self.day)).strftime("%Y-%m-%d")
-                # TODO: get date from template type = 10 
-                menu = ReSTify.model.Menu()    
+                date = self.startday + datetime.timedelta(days=self.day)
+                ondate = date.strftime("%Y-%m-%d")
+                
+                
+                menu = Menu.query(Menu.name == u"Полный обед", Menu.onDate == date).get()
+                if menu is None:
+                    menu = Menu()  
+                
                 menu.name = u"Полный обед"
                 menu.items = self.items
                 menu.price = 35000
-                menu.onDate = date
+                menu.onDate = ondate
                 menu.put()
-                if self.day == 0:
-                    self.mondaymenu.append(menu)
                 
                 self.items.pop(1)
-                # TODO: get date from template type = 11 
-                menu = ReSTify.model.Menu()    
+                
+                menu = Menu.query(Menu.name == u"Без первого", Menu.onDate == date).get()
+                if menu is None:
+                    menu = Menu()  
+                
                 menu.name = u"Без первого"
                 menu.items = self.items
                 menu.price = 30000
-                menu.onDate = date
+                menu.onDate = ondate
                 menu.put()
-                if self.day == 0:
-                    self.mondaymenu.append(menu)
                 
                 self.day += 1                
                 self.items = []
@@ -85,24 +86,56 @@ class MenuParser(HTMLParser):
             str = unicode(data, 'utf8')
             items =  re.match(u'(.*?),(.*?)гр', str)
             if items is not None:
-                item = ReSTify.model.Item()
+                item = Item()
                 item.name = items.group(1)
                 item.weight = items.group(2)
                 self.items.append(item)
 
-class MenuGenerator(webapp2.RequestHandler):
+class MenuGet(webapp2.RequestHandler):
     def get(self):
         url = "http://chudo-pechka.by/"
         menu = urlfetch.fetch(url)
-        p = MenuParser()
+        
+        day = datetime.date.today()
+        day_of_week = day.weekday()
+        to_beginning_of_week = datetime.timedelta(days=day_of_week)
+        
+        monday = day - to_beginning_of_week + datetime.timedelta(days=7)
+        nextmonday = monday + datetime.timedelta(days=7)
+        
+        p = MenuParser(monday)
         p.feed(menu.content)
-        # TODO: replace userday select for types 8 on new added menu (p.mondaymenu)
+        nextmondaymenu = Menu.query(Menu.type == 8)
+        for menu in nextmondaymenu:
+            nextmenu = clone_entity(menu)
+            nextmenu.onDate = nextmonday.strftime("%Y-%m-%d")
+            nextmenu.type = 0
+            nextmenu.put()
+     
+        
+        self.response.write("OK")    
+        
+class MenuUpdate(webapp2.RequestHandler):
+    def get(self):
+        url = "http://chudo-pechka.by/"
+        menu = urlfetch.fetch(url)
+        
+        day = datetime.date.today()
+        day_of_week = day.weekday()
+        to_beginning_of_week = datetime.timedelta(days=day_of_week)
+        
+        monday = day - to_beginning_of_week
+        
+        p = MenuParser(monday)
+        p.feed(menu.content)
+        
         self.response.write("OK")    
  
 application = webapp2.WSGIApplication(
     [
         ('/api/.*', ReSTify.ReST),
         ('/',LandingPage),
-        ('/getmenu',MenuGenerator),
+        ('/getmenu',MenuGet),
+        ('/getmenu',MenuUpdate),
         ],
     debug=True)
