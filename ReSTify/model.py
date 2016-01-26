@@ -67,18 +67,70 @@ class Menu(ndb.Model):
 class User(ndb.Model):    
     name = ndb.StringProperty()
     bill = ndb.IntegerProperty()
+        
+class Payment(ndb.Model):    
+    userid = ndb.IntegerProperty() 
+    date = JsonDateProperty(auto_now_add = True)
+    sum = ndb.IntegerProperty()
 
+    def before_put(self):
+        pass
+
+    def after_put(self):
+        user = User.get_by_id(self.userid)
+        user.bill = user.bill + self.sum
+        user.put()
+        
+
+    def put(self, **kwargs):
+        self.before_put()
+        result = super(Payment, self).put(**kwargs)
+        self.after_put()
+        return result
+
+    def save(self, **kwargs):
+        self.before_put()
+        result = super(Payment, self).save(**kwargs)
+        self.after_put()
+        return result
+        
 class UserDay(ndb.Model):   
     userid = ndb.IntegerProperty() 
     date = JsonDateProperty()
     selectid = ndb.IntegerProperty() 
+    confirm = ndb.BooleanProperty(default = False)
     
-'''
-public class UserDay
-   {
-       public int Id { get; set; }
-       public int UserId { get; set; }
-       public DateTime Date { get; set; }
-       public Menu select { get; set; }
-   }
-'''
+    def before_put(self):
+        if self.key is not None:
+            userday = UserDay.get_by_id(self.key.id())
+            
+            if (userday.confirm and userday.selectid != self.selectid):
+                self.selectid = userday.selectid
+                return
+            
+            if (userday.confirm and not self.confirm):
+                user = User.get_by_id(self.userid)
+                menu = Menu.get_by_id(userday.selectid)
+                user.bill = user.bill + menu.price
+                user.put()
+                
+            if (not userday.confirm and self.confirm):
+                user = User.get_by_id(self.userid)
+                menu = Menu.get_by_id(self.selectid)
+                user.bill = user.bill - menu.price
+                user.put()
+
+    def after_put(self):
+        pass
+        
+    def put(self, **kwargs):
+        self.before_put()
+        result = super(UserDay, self).put(**kwargs)
+        self.after_put()
+        return result
+
+    def save(self, **kwargs):
+        self.before_put()
+        result = super(UserDay, self).save(**kwargs)
+        self.after_put()
+        return result

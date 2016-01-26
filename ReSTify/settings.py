@@ -8,4 +8,5 @@ MODEL_NAME_ALIAS = {
   'menuitem': 'Item',
   'user': 'User',
   'userday': 'UserDay',
+  'payment': 'Payment',
   }
