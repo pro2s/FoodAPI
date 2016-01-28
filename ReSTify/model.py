@@ -100,6 +100,14 @@ class UserDay(ndb.Model):
     selectid = ndb.IntegerProperty() 
     confirm = ndb.BooleanProperty(default = False)
     
+    @classmethod
+    def GetQuery(self, request):
+        qry = self.query()
+        userid = int(request.get("userid","-1"))
+        if ( userid > 0 ):
+            qry = self.query(UserDay.userid == userid)
+        return qry
+        
     def before_put(self):
         if self.key is not None:
             userday = UserDay.get_by_id(self.key.id())
