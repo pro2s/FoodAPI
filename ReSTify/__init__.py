@@ -68,7 +68,7 @@ def CSOR_Jsonify(func):
         args[0].response.headers.add_header("Access-Control-Allow-Origin", _origin)
         args[0].response.headers.add_header("Access-Control-Allow-Credentials", "true")
         args[0].response.headers.add_header("Access-Control-Allow-Headers",
-         "origin, x-requested-with, content-type, accept")
+         "origin, x-requested-with, content-type, accept,Authorization")
         args[0].response.headers.add_header('Content-Type', 'application/json')
 
         if dataObject:
@@ -337,4 +337,4 @@ class ReST(webapp2.RequestHandler):
          "GET, POST, OPTIONS, PUT, DELETE")
         self.response.headers.add_header("Access-Control-Allow-Credentials", "true")
         self.response.headers.add_header("Access-Control-Allow-Headers",
-         "origin, x-requested-with, content-type, accept")
+         "origin, x-requested-with, content-type, accept,Authorization")
