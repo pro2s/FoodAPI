@@ -31,11 +31,6 @@ class JsonDateProperty(ndb.DateProperty):
             value = None
         ndb.DateProperty._set_value(self, entity, value)
 
-class Account(ndb.Model):
-    id = ndb.StringProperty()
-    username = ndb.StringProperty()
-    
-   
     
 class Item(ndb.Model):
     name = ndb.StringProperty()
@@ -71,7 +66,11 @@ class Menu(ndb.Model):
 class User(ndb.Model):    
     name = ndb.StringProperty()
     bill = ndb.IntegerProperty()
-        
+    email = ndb.StringProperty()
+    roles = ndb.StringProperty()
+    userName = ndb.StringProperty()
+    
+    
 class Payment(ndb.Model):    
     userid = ndb.IntegerProperty() 
     date = JsonDateProperty(auto_now_add = True)
