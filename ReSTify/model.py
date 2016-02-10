@@ -31,6 +31,10 @@ class JsonDateProperty(ndb.DateProperty):
             value = None
         ndb.DateProperty._set_value(self, entity, value)
 
+class Account(ndb.Model):
+    id = ndb.StringProperty()
+    username = ndb.StringProperty()
+    
    
     
 class Item(ndb.Model):

@@ -9,6 +9,17 @@ import webapp2
 import datetime 
 import ReSTify
 import re
+import json
+import urlparse 
+
+def SetCORS(response, request):
+    _origin = request.headers.get('Origin','')
+    response.headers.add_header("Access-Control-Allow-Origin", _origin)
+    response.headers.add_header("Access-Control-Allow-Credentials", "true")
+    response.headers.add_header("Access-Control-Allow-Headers",
+    "origin, x-requested-with, content-type, accept,Authorization")
+    response.headers.add_header('Content-Type', 'application/json')
+
 
 def clone_entity(e, **extra_args):
   _class = e.__class__
@@ -19,7 +30,36 @@ def clone_entity(e, **extra_args):
 class LandingPage(webapp2.RequestHandler):
     def get(self):
         self.response.write("Food API")
-
+        
+class GetToken(webapp2.RequestHandler):
+    def post(self):
+        SetCORS(self.response, self.request)
+        
+        request = unicode(self.request.body, 'utf-8')
+        data = urlparse.parse_qs(request)
+        print data
+        obj = {
+            'token_type': 'Fake', 
+            'access_token': data['username'][0],
+        } 
+        self.response.write(json.dumps(obj))
+        
+    def options(self):
+        SetCORS(self.response, self.request)
+        
+class AccountApi(webapp2.RequestHandler):
+    def get(self):
+        SetCORS(self.response, self.request)
+        
+        obj = {
+            'userName': 'test@test.tt', 
+            'roles': ['Admin'],
+        } 
+        self.response.write(json.dumps(obj))
+    
+    def options(self):
+        SetCORS(self.response, self.request)
+        
 class MenuParser(HTMLParser):
     def __init__(self, startday = datetime.date.today()):
         HTMLParser.__init__(self)
@@ -133,8 +173,10 @@ class MenuUpdate(webapp2.RequestHandler):
  
 application = webapp2.WSGIApplication(
     [
+        ('/',LandingPage),  
+        ('/api/Account/.*',AccountApi),
         ('/api/.*', ReSTify.ReST),
-        ('/',LandingPage),
+        ('/token',GetToken),
         ('/getmenu',MenuGet),
         ('/getmenu',MenuUpdate),
         ],

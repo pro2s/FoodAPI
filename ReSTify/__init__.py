@@ -156,9 +156,10 @@ class ReST(webapp2.RequestHandler):
         _model = None
 
         node = self.request.path_info.split('/')
+        
         if node[-1] == '':
             node.pop(-1)
-
+        
         if len(node) - 1 >= 2:
             if node[2]:
                 try:
@@ -169,7 +170,6 @@ class ReST(webapp2.RequestHandler):
             if len(node) -1 > 2 and _model:
                 Object_by_id = _model.get_by_id(int(node[3]))
             elif node[2] and _model:
-                
                 try:
                     qry = _model.GetQuery(self.request)
                 except:
