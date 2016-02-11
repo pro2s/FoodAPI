@@ -3,7 +3,7 @@ from google.appengine.ext import ndb
 from google.appengine.api import urlfetch
 
 from HTMLParser import HTMLParser
-from ReSTify.model import Menu, Item
+from ReSTify.model import Menu, Item, User
 
 import webapp2
 import datetime 
@@ -34,29 +34,57 @@ class LandingPage(webapp2.RequestHandler):
 class GetToken(webapp2.RequestHandler):
     def post(self):
         SetCORS(self.response, self.request)
-        
         request = unicode(self.request.body, 'utf-8')
         data = urlparse.parse_qs(request)
-        print data
-        obj = {
-            'token_type': 'Fake', 
-            'access_token': data['username'][0],
-        } 
-        self.response.write(json.dumps(obj))
-        
+        username = data['username'][0]
+        if username:
+            user = User.query(User.email == username).get();
+            if user:
+                obj = {
+                    'token_type': 'Fake', 
+                    'access_token': username ,
+                } 
+                self.response.write(json.dumps(obj))
+            else:
+                self.abort(401)
+
     def options(self):
         SetCORS(self.response, self.request)
         
 class AccountApi(webapp2.RequestHandler):
     def get(self):
         SetCORS(self.response, self.request)
+        roles = []
+        username = ''
+        action  = ''
+        id = None
         
-        obj = {
-            'userName': 'test@test.tt', 
-            'roles': ['Admin'],
-        } 
-        self.response.write(json.dumps(obj))
-    
+        node = self.request.path_info.split('/')[3:]
+        if node[-1] == '':
+            node.pop(-1)
+        action = node[0]
+        if len(node) > 1:
+            id = node[1]
+        
+        auth = self.request.headers.get('Authorization','').split(' ');
+        if auth[0] == 'Fake':
+            username = auth[2]
+
+        if username != '' and action == 'UserInfo':
+            user = User.query(User.email == username).get();
+            if user:
+                userid = user.key.id()
+                roles = user.roles
+                obj = {
+                    'userid': userid,
+                    'userName': username, 
+                    'roles': roles,
+                } 
+                self.response.write(json.dumps(obj))
+            else:
+                self.abort(403)
+
+                
     def options(self):
         SetCORS(self.response, self.request)
         

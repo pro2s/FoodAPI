@@ -151,6 +151,11 @@ class ReST(webapp2.RequestHandler):
             200 -> Ok -> When data is found and proper data is returned.
 
         """
+        auth = self.request.headers.get('Authorization','').split(' ');
+        if auth[0] == 'Fake':
+                user = User.query(User.email == auth[2]).get();
+                settings.AUTH_USERID = user.key.id()
+
         qry = None
         Object_by_id = None
         _model = None
@@ -191,10 +196,7 @@ class ReST(webapp2.RequestHandler):
             dataObject=Object_by_id.to_dict()
             dataList.append(dataObject)
 
-        if len(dataList)==0:
-            self.abort(404)
-            dataList = None
-        elif not qry and not Object_by_id:
+        if not qry and not Object_by_id:
             self.abort(400)
         else :
             self.response.set_status(200,"Ok")

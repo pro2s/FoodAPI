@@ -1,6 +1,7 @@
 # Define your database model over here
 import datetime
 import logging
+import settings
 
 from google.appengine.api import users
 from google.appengine.ext import ndb
@@ -98,39 +99,51 @@ class Payment(ndb.Model):
         return result
         
 class UserDay(ndb.Model):   
-    userid = ndb.IntegerProperty() 
+    userID = ndb.IntegerProperty() 
     date = JsonDateProperty()
-    selectid = ndb.IntegerProperty() 
+    menuId = ndb.IntegerProperty() 
     confirm = ndb.BooleanProperty(default = False)
     
     @classmethod
     def GetQuery(self, request):
         qry = self.query()
-        userid = int(request.get("userid","-1"))
-        if ( userid > 0 ):
-            qry = self.query(UserDay.userid == userid)
+        userid = int(request.get('userid','-1'))
+        list = request.get('list','')
+        auth = request.headers.get('Authorization','').split(' ');
+        
+        if auth[0] == 'Fake':
+            user = User.query(User.email == auth[2]).get();
+            userid = user.key.id()
+
+        if ( userid > 0 and list != 'all'):
+            qry = self.query(UserDay.userID == userid)
         return qry
         
     def before_put(self):
+        # Exist record
         if self.key is not None:
             userday = UserDay.get_by_id(self.key.id())
             
-            if (userday.confirm and userday.selectid != self.selectid):
-                self.selectid = userday.selectid
+            if (userday.confirm and userday.menuId != self.menuId):
+                self.menuId = userday.menuId
                 return
             
             if (userday.confirm and not self.confirm):
-                user = User.get_by_id(self.userid)
-                menu = Menu.get_by_id(userday.selectid)
+                user = User.get_by_id(self.userID)
+                menu = Menu.get_by_id(userday.menuId)
                 user.bill = user.bill + menu.price
                 user.put()
                 
             if (not userday.confirm and self.confirm):
-                user = User.get_by_id(self.userid)
-                menu = Menu.get_by_id(self.selectid)
+                user = User.get_by_id(self.userID)
+                menu = Menu.get_by_id(self.menuId)
                 user.bill = user.bill - menu.price
                 user.put()
-
+        # New record                
+        else:
+            if settings.AUTH_USERID > 0 and self.userid is None:
+                self.userID = settings.AUTH_USERID
+                
     def after_put(self):
         pass
         
