@@ -206,6 +206,6 @@ application = webapp2.WSGIApplication(
         ('/api/.*', ReSTify.ReST),
         ('/token',GetToken),
         ('/getmenu',MenuGet),
-        ('/getmenu',MenuUpdate),
+        ('/updatemenu',MenuUpdate),
         ],
     debug=True)
