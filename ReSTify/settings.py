@@ -14,6 +14,8 @@ MODEL_NAME_ALIAS = {
     'users': 'User',
     'userchoices': 'UserDay',
     'payments': 'Payment',
+    'itemrating': 'ItemRating',
+    'itemcomments': 'ItemComments',
 }
     
     

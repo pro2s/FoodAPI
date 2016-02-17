@@ -32,18 +32,35 @@ class JsonDateProperty(ndb.DateProperty):
             value = None
         ndb.DateProperty._set_value(self, entity, value)
 
+class ItemComments(ndb.Model):
+    itemId =  JsonIntegerProperty(default = 0)
+    comment = ndb.StringProperty()
+    userID = ndb.IntegerProperty()            
+    date = JsonDateProperty()
+
+class ItemRating(ndb.Model):
+    itemId =  JsonIntegerProperty(default = 0)
+    rating = JsonIntegerProperty(default = 0)
+    userID = ndb.IntegerProperty()     
+    date = JsonDateProperty()
     
+        
 class Item(ndb.Model):
     name = ndb.StringProperty()
     parts = ndb.StringProperty()
     weight = ndb.StringProperty()
 
-class Menu(ndb.Model):    
+class MenuItems(ndb.Model):    
+    menuId = JsonIntegerProperty(default = 0)
+    itemId =  JsonIntegerProperty(default = 0)
+
+class Menu(ndb.Model):   
     name = ndb.StringProperty()
     items = ndb.StructuredProperty(Item, repeated=True) 
     price = JsonIntegerProperty(default = 0)
     onDate = JsonDateProperty()
     type = JsonIntegerProperty(default = 0)
+    rating = JsonIntegerProperty(default = 0)
     
     @classmethod
     def GetQuery(self, request):
@@ -141,7 +158,7 @@ class UserDay(ndb.Model):
                 user.put()
         # New record                
         else:
-            if settings.AUTH_USERID > 0 and self.userid is None:
+            if settings.AUTH_USERID > 0 and self.userID is None:
                 self.userID = settings.AUTH_USERID
                 
     def after_put(self):
